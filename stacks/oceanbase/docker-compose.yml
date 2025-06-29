@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  oceanbase:
+    image: oceanbase/oceanbase-ce:latest
+    container_name: oceanbase
+    hostname: oceanbase
+    ports:
+      - "${OB_PORT}:2881"
+      - "${OB_PROXY_PORT}:2883"
+      - "${OB_CONSOLE_PORT}:8080"
+    volumes:
+      - "${OB_DATA_PATH}:/root/obcluster"
+      - "${OB_LOG_PATH}:/root/log"
+    environment:
+      - OB_CLUSTER_NAME=${OB_CLUSTER_NAME}
+      - OB_ROOT_PASSWORD=${OB_ROOT_PASSWORD}
+      - OB_TENANT_NAME=${OB_TENANT_NAME}
+    restart: unless-stopped
+    privileged: true
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    command: >
+      bash -c '
+        if [ ! -f /root/obcluster/.initialized ]; then
+          obd cluster deploy ${OB_CLUSTER_NAME} -c /etc/obd/example/mini-local-example.yaml
+          obd cluster start ${OB_CLUSTER_NAME}
+          obd cluster tenant create ${OB_CLUSTER_NAME} -n ${OB_TENANT_NAME}
+          touch /root/obcluster/.initialized
+        else
+          obd cluster start ${OB_CLUSTER_NAME}
+        fi
+        tail -f /dev/null
+      '
+    networks:
+      - oceanbase-network
+
+  obproxy:
+    image: oceanbase/obproxy-ce:latest
+    container_name: obproxy
+    hostname: obproxy
+    ports:
+      - "${OB_PROXY_PORT}:2883"
+    environment:
+      - OB_CLUSTER_NAME=${OB_CLUSTER_NAME}
+      - OB_ROOT_PASSWORD=${OB_ROOT_PASSWORD}
+    restart: unless-stopped
+    depends_on:
+      - oceanbase
+    networks:
+      - oceanbase-network
+
+networks:
+  oceanbase-network:
+    driver: bridge 
