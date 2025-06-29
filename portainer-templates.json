@@ -1,0 +1,69 @@
+{
+  "version": "3",
+  "templates": [
+    {
+      "id": 1001,
+      "type": 3,
+      "title": "OceanBase Community Edition",
+      "description": "OceanBase Community Edition es una base de datos distribuida de alto rendimiento y alta disponibilidad. Esta plantilla despliega OceanBase con configuración básica para desarrollo y pruebas.",
+      "categories": ["database", "distributed", "high-availability"],
+      "platform": "linux",
+      "logo": "https://github.com/oceanbase/oceanbase/raw/develop/images/logo.svg",
+      "note": "OceanBase requiere al menos 8GB de RAM y 20GB de espacio en disco. Para producción, se recomienda configurar múltiples nodos.",
+      "env": [
+        {
+          "name": "OB_PORT",
+          "label": "Puerto de OceanBase",
+          "description": "Puerto para conectarse a OceanBase",
+          "default": "2881"
+        },
+        {
+          "name": "OB_PROXY_PORT",
+          "label": "Puerto de OceanBase Proxy",
+          "description": "Puerto para OceanBase Proxy",
+          "default": "2883"
+        },
+        {
+          "name": "OB_CONSOLE_PORT",
+          "label": "Puerto de OceanBase Console",
+          "description": "Puerto para la interfaz web de OceanBase",
+          "default": "8080"
+        },
+        {
+          "name": "OB_DATA_PATH",
+          "label": "Ruta de datos de OceanBase",
+          "description": "Ruta donde se almacenarán los datos de OceanBase",
+          "default": "/srv/oceanbase/data"
+        },
+        {
+          "name": "OB_LOG_PATH",
+          "label": "Ruta de logs de OceanBase",
+          "description": "Ruta donde se almacenarán los logs de OceanBase",
+          "default": "/srv/oceanbase/logs"
+        },
+        {
+          "name": "OB_CLUSTER_NAME",
+          "label": "Nombre del cluster",
+          "description": "Nombre del cluster de OceanBase",
+          "default": "obcluster"
+        },
+        {
+          "name": "OB_ROOT_PASSWORD",
+          "label": "Contraseña de root",
+          "description": "Contraseña para el usuario root de OceanBase",
+          "default": "password"
+        },
+        {
+          "name": "OB_TENANT_NAME",
+          "label": "Nombre del tenant",
+          "description": "Nombre del tenant por defecto",
+          "default": "sys"
+        }
+      ],
+      "repository": {
+        "url": "https://github.com/portainer/templates",
+        "stackfile": "stacks/oceanbase/docker-compose.yml"
+      }
+    }
+  ]
+} 
