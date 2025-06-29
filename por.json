@@ -1,0 +1,66 @@
+{
+  "version": "3",
+  "templates": [
+    {
+      "id": 1001,
+      "type": 3,
+      "title": "OceanBase Community Edition",
+      "description": "OceanBase Community Edition es una base de datos distribuida de alto rendimiento y alta disponibilidad. Esta plantilla despliega OceanBase con configuración básica para desarrollo y pruebas.",
+      "categories": ["database", "distributed", "high-availability"],
+      "platform": "linux",
+      "logo": "https://github.com/oceanbase/oceanbase/raw/develop/images/logo.svg",
+      "note": "OceanBase requiere al menos 8GB de RAM y 20GB de espacio en disco. Para producción, se recomienda configurar múltiples nodos.",
+      "env": [
+        {
+          "name": "OB_PORT",
+          "label": "Puerto de OceanBase",
+          "description": "Puerto para conectarse a OceanBase",
+          "default": "2881"
+        },
+        {
+          "name": "OB_PROXY_PORT",
+          "label": "Puerto de OceanBase Proxy",
+          "description": "Puerto para OceanBase Proxy",
+          "default": "2883"
+        },
+        {
+          "name": "OB_CONSOLE_PORT",
+          "label": "Puerto de OceanBase Console",
+          "description": "Puerto para la interfaz web de OceanBase",
+          "default": "8080"
+        },
+        {
+          "name": "OB_DATA_PATH",
+          "label": "Ruta de datos de OceanBase",
+          "description": "Ruta donde se almacenarán los datos de OceanBase",
+          "default": "/srv/oceanbase/data"
+        },
+        {
+          "name": "OB_LOG_PATH",
+          "label": "Ruta de logs de OceanBase",
+          "description": "Ruta donde se almacenarán los logs de OceanBase",
+          "default": "/srv/oceanbase/logs"
+        },
+        {
+          "name": "OB_CLUSTER_NAME",
+          "label": "Nombre del cluster",
+          "description": "Nombre del cluster de OceanBase",
+          "default": "obcluster"
+        },
+        {
+          "name": "OB_ROOT_PASSWORD",
+          "label": "Contraseña de root",
+          "description": "Contraseña para el usuario root de OceanBase",
+          "default": "password"
+        },
+        {
+          "name": "OB_TENANT_NAME",
+          "label": "Nombre del tenant",
+          "description": "Nombre del tenant por defecto",
+          "default": "sys"
+        }
+      ],
+      "compose": "version: '3.8'\n\nservices:\n  oceanbase:\n    image: oceanbase/oceanbase-ce:latest\n    container_name: oceanbase\n    hostname: oceanbase\n    ports:\n      - \"${OB_PORT}:2881\"\n      - \"${OB_PROXY_PORT}:2883\"\n      - \"${OB_CONSOLE_PORT}:8080\"\n    volumes:\n      - \"${OB_DATA_PATH}:/root/obcluster\"\n      - \"${OB_LOG_PATH}:/root/log\"\n    environment:\n      - OB_CLUSTER_NAME=${OB_CLUSTER_NAME}\n      - OB_ROOT_PASSWORD=${OB_ROOT_PASSWORD}\n      - OB_TENANT_NAME=${OB_TENANT_NAME}\n    restart: unless-stopped\n    privileged: true\n    ulimits:\n      nofile:\n        soft: 65536\n        hard: 65536\n    command: >\n      bash -c '\n        if [ ! -f /root/obcluster/.initialized ]; then\n          obd cluster deploy ${OB_CLUSTER_NAME} -c /etc/obd/example/mini-local-example.yaml\n          obd cluster start ${OB_CLUSTER_NAME}\n          obd cluster tenant create ${OB_CLUSTER_NAME} -n ${OB_TENANT_NAME}\n          touch /root/obcluster/.initialized\n        else\n          obd cluster start ${OB_CLUSTER_NAME}\n        fi\n        tail -f /dev/null\n      '\n    networks:\n      - oceanbase-network\n\n  obproxy:\n    image: oceanbase/obproxy-ce:latest\n    container_name: obproxy\n    hostname: obproxy\n    ports:\n      - \"${OB_PROXY_PORT}:2883\"\n    environment:\n      - OB_CLUSTER_NAME=${OB_CLUSTER_NAME}\n      - OB_ROOT_PASSWORD=${OB_ROOT_PASSWORD}\n    restart: unless-stopped\n    depends_on:\n      - oceanbase\n    networks:\n      - oceanbase-network\n\nnetworks:\n  oceanbase-network:\n    driver: bridge\n"
+    }
+  ]
+} 
